@@ -24,6 +24,7 @@ public class RsyncReceiver extends Service {
         public ServiceHandler(Looper looper) {
             super(looper);
         }
+
         @Override
         public void handleMessage(Message msg) {
             if(srv != null) return;
