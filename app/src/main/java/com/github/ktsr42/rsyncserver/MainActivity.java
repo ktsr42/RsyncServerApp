@@ -1,6 +1,7 @@
 package com.github.ktsr42.rsyncserver;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,8 +20,28 @@ public class MainActivity extends AppCompatActivity {
 
         tvwModuleName = findViewById(R.id.tvwModuleName);
         tvwPortNumber = findViewById(R.id.tvwPortNumber);
+        
+        PortModuleSingleton pm = PortModuleSingleton.getInstance();
+        final Observer<Integer> portNumObserver = new Observer<Integer>() {
+
+            @Override
+            public void onChanged(Integer integer) {
+                tvwPortNumber.setText(integer.toString());
+            }
+        };
+        pm.portNum.observe(this, portNumObserver);
+
+        final Observer<String> moduleNameObserver = new Observer<String>() {
+
+            @Override
+            public void onChanged(String s) {
+                tvwModuleName.setText(s);
+            }
+        };
+        pm.moduleName.observe(this, moduleNameObserver);
     }
 
+    // FIXME: switch to service binding
     public void startRsyncServer(View view) {
         Intent intent = new Intent(this, RsyncReceiver.class);
         intent.putExtra(RsyncReceiver.TGT_MODULE_NAME, "testmod");

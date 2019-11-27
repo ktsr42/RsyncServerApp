@@ -33,5 +33,7 @@ dependencies {
     implementation files('libs/libintf-0.9.0.jar')
     implementation files('libs/yajsync-app-0.9.0.jar')
     implementation files('libs/yajsync-core-0.9.0.jar')
+
+    implementation "androidx.lifecycle:lifecycle-extensions:2.1.0"
 }
 

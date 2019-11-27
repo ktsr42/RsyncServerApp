@@ -7,9 +7,11 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.github.ktsr42.yajsynclib.LibServer;
 
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 public class RsyncReceiver extends Service {
+
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
         private LibServer srv;
@@ -27,11 +30,17 @@ public class RsyncReceiver extends Service {
 
         @Override
         public void handleMessage(Message msg) {
+            Log.d("RsyncReceiver", "handling message" + msg.toString());
             if(srv != null) return;
 
             srv = new LibServer((String)msg.obj, msg.arg1);
             try {
-                srv.initServer(InetAddress.getLocalHost());
+                Object[] mnp = srv.initServer(InetAddress.getLocalHost());
+                Log.d("RsyncReceiverXX", "initServer() port " + mnp[0].toString() + ", modulename " + mnp[0].toString());
+                PortModuleSingleton pms = PortModuleSingleton.getInstance();
+                pms.moduleName.postValue((String)mnp[0]);
+                pms.portNum.postValue((int)mnp[1]);
+
                 srv.run();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -50,6 +59,8 @@ public class RsyncReceiver extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+
         // either fork of new thread here or in onStartCommand()
         // need to send the port number back and forth
         // Start up the thread running the service. Note that we create a
