@@ -12,6 +12,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView tvwModuleName;
     private TextView tvwPortNumber;
+    private TextView tvwAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,10 +21,10 @@ public class MainActivity extends AppCompatActivity {
 
         tvwModuleName = findViewById(R.id.tvwModuleName);
         tvwPortNumber = findViewById(R.id.tvwPortNumber);
-        
+        tvwAddress = findViewById(R.id.tvwAddress);
+
         PortModuleSingleton pm = PortModuleSingleton.getInstance();
         final Observer<Integer> portNumObserver = new Observer<Integer>() {
-
             @Override
             public void onChanged(Integer integer) {
                 tvwPortNumber.setText(integer.toString());
@@ -32,13 +33,20 @@ public class MainActivity extends AppCompatActivity {
         pm.portNum.observe(this, portNumObserver);
 
         final Observer<String> moduleNameObserver = new Observer<String>() {
-
             @Override
             public void onChanged(String s) {
                 tvwModuleName.setText(s);
             }
         };
         pm.moduleName.observe(this, moduleNameObserver);
+
+        final Observer<String> addressObserver = new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                tvwAddress.setText(s);
+            }
+        };
+        pm.localAddress.observe(this, addressObserver);
     }
 
     // FIXME: switch to service binding
@@ -49,8 +57,5 @@ public class MainActivity extends AppCompatActivity {
         startService(intent);
     }
 
-
-    public void stopRyncReceiver(View view) {
-        stopService(new Intent(this, RsyncReceiver.class));
-    }
+    public void stopRyncReceiver(View view) { stopService(new Intent(this, RsyncReceiver.class)); }
 }

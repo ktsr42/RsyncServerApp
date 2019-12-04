@@ -15,5 +15,5 @@ public class PortModuleSingleton {
 
   MutableLiveData<Integer> portNum = new MutableLiveData<>();
   MutableLiveData<String> moduleName = new MutableLiveData<>();
-  MutableLiveData<InetAddress> localAddress = new MutableLiveData<>();
+  MutableLiveData<String> localAddress = new MutableLiveData<>();
 }
