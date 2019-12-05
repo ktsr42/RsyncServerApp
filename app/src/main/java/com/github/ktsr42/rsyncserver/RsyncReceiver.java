@@ -88,7 +88,7 @@ public class RsyncReceiver extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        
+
         // either fork of new thread here or in onStartCommand()
         // need to send the port number back and forth
         // Start up the thread running the service. Note that we create a

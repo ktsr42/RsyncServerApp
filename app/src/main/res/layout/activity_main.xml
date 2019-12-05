@@ -8,7 +8,7 @@
 
     <Button
         android:id="@+id/btnStart"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="startRsyncServer"
         android:padding="@dimen/std_padding"
@@ -18,26 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/lblModuleName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/std_padding"
-        android:text="Module Name"
-        android:textSize="24sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnStart" />
-
-    <TextView
-        android:id="@+id/tvwModuleName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:padding="@dimen/std_padding"
-        android:text="module"
-        android:textSize="24sp"
-        app:layout_constraintStart_toEndOf="@+id/lblModuleName"
-        app:layout_constraintTop_toTopOf="@+id/lblModuleName" />
+    <!-- =============== -->
 
     <TextView
         android:id="@+id/lblAddress"
@@ -45,10 +26,11 @@
         android:layout_height="wrap_content"
         android:layout_marginVertical="16dp"
         android:padding="@dimen/std_padding"
-        android:text="IP"
+        android:text="IP Address"
         android:textSize="24sp"
+        android:textStyle="italic"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lblModuleName" />
+        app:layout_constraintTop_toBottomOf="@id/btnStart" />
 
     <TextView
         android:id="@+id/tvwAddress"
@@ -56,10 +38,12 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/std_padding"
         android:text="ip address"
-        android:layout_marginStart="16dp"
         android:textSize="24sp"
-        app:layout_constraintStart_toEndOf="@+id/lblAddress"
-        app:layout_constraintTop_toTopOf="@id/lblAddress" />
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lblAddress" />
+
+    <!-- =============== -->
 
     <TextView
         android:id="@+id/lblPortNumber"
@@ -69,30 +53,73 @@
         android:padding="@dimen/std_padding"
         android:text="Port Number"
         android:textSize="24sp"
+        android:textStyle="italic"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lblAddress" />
+        app:layout_constraintTop_toBottomOf="@id/tvwAddress" />
 
     <TextView
         android:id="@+id/tvwPortNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="portnum"
         android:padding="@dimen/std_padding"
-        android:layout_marginStart="16dp"
+        android:text="portnum"
         android:textSize="24sp"
-        app:layout_constraintStart_toEndOf="@+id/lblPortNumber"
-        app:layout_constraintTop_toTopOf="@id/lblPortNumber" />
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lblPortNumber" />
+
+    <!-- =============== -->
+
+    <TextView
+        android:id="@+id/lblModuleName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:padding="@dimen/std_padding"
+        android:text="Module Name"
+        android:textSize="24sp"
+        android:textStyle="italic"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvwPortNumber" />
+
+    <TextView
+        android:id="@+id/tvwModuleName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/std_padding"
+        android:text="module"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lblModuleName" />
+
+    <!-- =============== -->
+
+    <TextView
+        android:id="@+id/tvwRsyncLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:padding="@dimen/std_padding"
+        android:text="rsyncline"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvwModuleName" />
+
+    <!-- =============== -->
 
     <Button
         android:id="@+id/btnStop"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:onClick="stopRyncReceiver"
         android:padding="@dimen/std_padding"
         android:text="Stop"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lblPortNumber" />
+        app:layout_constraintTop_toBottomOf="@+id/tvwRsyncLine" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
