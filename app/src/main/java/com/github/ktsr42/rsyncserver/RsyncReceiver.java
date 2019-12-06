@@ -1,7 +1,12 @@
 package com.github.ktsr42.rsyncserver;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
@@ -12,6 +17,7 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -19,6 +25,7 @@ import com.github.ktsr42.yajsynclib.LibServer;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 public class RsyncReceiver extends Service {
@@ -40,6 +47,8 @@ public class RsyncReceiver extends Service {
             try {
                 PortModuleSingleton pms = PortModuleSingleton.getInstance();
                 InetAddress wifiaddr = getWifiAddress();
+
+                wifiaddr = getAnyInetAddress();
                 if(wifiaddr == null) {
                     pms.moduleName.postValue("No Wifi Address");
                     return;
@@ -59,6 +68,8 @@ public class RsyncReceiver extends Service {
             }
         }
 
+        private InetAddress getAnyInetAddress() { return new InetSocketAddress(0).getAddress(); }
+
         private InetAddress getWifiAddress() {
             WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
             WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
@@ -75,6 +86,29 @@ public class RsyncReceiver extends Service {
                 e.printStackTrace();
                 return null;
             }
+        }
+
+    }
+
+    private class WifiNetworkCallback extends ConnectivityManager.NetworkCallback {
+        private PortModuleSingleton pms = PortModuleSingleton.getInstance();
+
+        @Override
+        public void onAvailable(@NonNull Network network) {
+            super.onAvailable(network);
+            pms.onWifi.postValue(true);
+            InetAddress a = null;
+            try {
+                a = network.getByName(null);
+            } catch (UnknownHostException e) {
+            }
+
+        }
+
+        @Override
+        public void onLost(@NonNull Network network) {
+            super.onLost(network);
+            pms.onWifi.postValue(false);
         }
 
     }
@@ -101,6 +135,12 @@ public class RsyncReceiver extends Service {
         // Get the HandlerThread's Looper and use it for our Handler
         serviceLooper = thread.getLooper();
         serviceHandler = new ServiceHandler(serviceLooper);
+
+        NetworkRequest.Builder nwrb = new NetworkRequest.Builder();
+        nwrb.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        nwrb.addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET);
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        cm.registerNetworkCallback(nwrb.build(), new WifiNetworkCallback());
     }
 
     @Override
@@ -129,7 +169,7 @@ public class RsyncReceiver extends Service {
         PortModuleSingleton pms = PortModuleSingleton.getInstance();
         pms.localAddress.setValue("");
         pms.moduleName.setValue("");
-        pms.portNum.setValue(0);
+        pms.portNum.setValue(null);
     }
 }
 

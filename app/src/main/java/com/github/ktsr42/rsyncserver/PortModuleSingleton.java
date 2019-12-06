@@ -16,4 +16,5 @@ public class PortModuleSingleton {
   MutableLiveData<Integer> portNum = new MutableLiveData<>();
   MutableLiveData<String> moduleName = new MutableLiveData<>();
   MutableLiveData<String> localAddress = new MutableLiveData<>();
+  MutableLiveData<Boolean> onWifi = new MutableLiveData<>();
 }

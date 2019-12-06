@@ -8,6 +8,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+// FIXME: Terminate service on application shutdown - but not on activity recreation (device flip)
+
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvwModuleName;
