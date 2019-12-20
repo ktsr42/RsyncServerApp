@@ -3,12 +3,23 @@ package com.github.ktsr42.rsyncserver;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.HandlerThread;
+import android.os.Message;
+import android.os.Process;
 import android.view.View;
 import android.widget.TextView;
 
 // FIXME: Terminate service on application shutdown - but not on activity recreation (device flip)
+
+// New Design:
+// Create HandlerThread in onCreate
+// implement service as a handler
+// hold handle to
+// Use runOnUIThread or view.post to update activity from hand;er
 
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private String portNum;
     private String module;
 
+    private RsyncServer server;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,12 +46,18 @@ public class MainActivity extends AppCompatActivity {
         tvwAddress = findViewById(R.id.tvwAddress);
         tvwRsyncLine = findViewById(R.id.tvwRsyncLine);
 
-        PortModuleSingleton pm = PortModuleSingleton.getInstance();
+        HandlerThread ht = new HandlerThread("Rsync Server Thread", Process.THREAD_PRIORITY_BACKGROUND);
+        ht.start();
+
+        server = new RsyncServer(ht.getLooper(), this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE));
+
+
+        RsyncServerAppState pm = RsyncServerAppState.getInstance();
         final Observer<Integer> portNumObserver = new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
-                portNum = integer.toString();
-                tvwPortNumber.setText(portNum);
+                if(null == integer) tvwPortNumber.setText("");
+                else                tvwPortNumber.setText(integer.toString());
                 setRsyncLine();
             }
         };
@@ -66,13 +85,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startRsyncServer(View view) {
-        Intent intent = new Intent(this, RsyncReceiver.class);
-        intent.putExtra(RsyncReceiver.TGT_MODULE_NAME, "testmod");
-        intent.putExtra(RsyncReceiver.TGT_PORT, 12345);
-        startService(intent);
+        Message msg = server.obtainMessage();
+        msg.arg1 = 1;
+        server.sendMessage(msg);
     }
 
-    public void stopRyncReceiver(View view) { stopService(new Intent(this, RsyncReceiver.class)); }
+    public void stopRyncReceiver(View view) {
+        Message msg = server.obtainMessage();
+        msg.arg1 = 0;
+        server.sendMessage(msg);
+    }
 
     private void setRsyncLine() {
         if(ipaddress == null || ipaddress == "") { tvwRsyncLine.setText(""); return; }
