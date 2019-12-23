@@ -56,8 +56,11 @@ public class MainActivity extends AppCompatActivity {
         final Observer<Integer> portNumObserver = new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
-                if(null == integer) tvwPortNumber.setText("");
-                else                tvwPortNumber.setText(integer.toString());
+                String s = null;
+                if(null == integer) s = "";
+                else                s = integer.toString();
+                portNum = s;
+                tvwPortNumber.setText(s);
                 setRsyncLine();
             }
         };
@@ -76,8 +79,19 @@ public class MainActivity extends AppCompatActivity {
         final Observer<String> addressObserver = new Observer<String>() {
             @Override
             public void onChanged(String s) {
-                ipaddress = s;
-                tvwAddress.setText(s);
+                if(s == null) {
+                    ipaddress = "";
+                } else {
+                    String[] addrparts = s.split("/", 2);
+                    if (addrparts.length == 1) {
+                        ipaddress = s;                 // no slash in the address string
+                    } else if (addrparts[0].length() ==0 ) {
+                        ipaddress = addrparts[1];      // no hostname string, just the ip
+                    } else {
+                        ipaddress = addrparts[0];      // we found a hostname against all odds
+                    }
+                }
+                tvwAddress.setText(ipaddress);
                 setRsyncLine();
             }
         };
