@@ -3,9 +3,12 @@ package com.github.ktsr42.rsyncserver;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -13,7 +16,7 @@ import android.os.Process;
 import android.view.View;
 import android.widget.TextView;
 
-// FIXME: Terminate service on application shutdown - but not on activity recreation (device flip)
+import static com.github.ktsr42.rsyncserver.RsyncServer.NOTIFICATION_CHANNEL_ID;
 
 // New Design:
 // Create HandlerThread in onCreate
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         server = new RsyncServer(ht.getLooper(), this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE));
 
+        createNotificationChannel();
 
         RsyncServerAppState pm = RsyncServerAppState.getInstance();
         final Observer<Integer> portNumObserver = new Observer<Integer>() {
@@ -117,5 +121,21 @@ public class MainActivity extends AppCompatActivity {
 
         String rsyncline = "rsync://" + ipaddress + ":" + portNum + "/" + module;
         tvwRsyncLine.setText(rsyncline);
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.nchName);
+            String description = getString(R.string.nchDescription);
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 }

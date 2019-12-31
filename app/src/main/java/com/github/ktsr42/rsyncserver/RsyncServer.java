@@ -1,6 +1,9 @@
 package com.github.ktsr42.rsyncserver;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.LinkAddress;
 import android.net.LinkProperties;
@@ -13,6 +16,7 @@ import android.os.Message;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 
 import com.github.ktsr42.yajsynclib.LibServer;
 
@@ -22,6 +26,9 @@ import java.net.InetAddress;
 
 // Handler that receives messages from the thread
 final class RsyncServer extends Handler {
+
+    public static final String NOTIFICATION_CHANNEL_ID = "RsyncServerNotifications";
+    public static final int NotificationId = 42;
 
     private class WifiNetworkCallback extends ConnectivityManager.NetworkCallback {
         private RsyncServerAppState pms = RsyncServerAppState.getInstance();
@@ -46,7 +53,6 @@ final class RsyncServer extends Handler {
                 start();
                 break;
             }
-            // send a message to the background task?
         }
 
     }
@@ -78,6 +84,8 @@ final class RsyncServer extends Handler {
         appstate.localAddress.postValue(localaddr.toString());
         appstate.moduleName.postValue((String)mnp[0]);
         appstate.portNum.postValue((Integer) mnp[1]);
+
+        displayNotification();
     }
 
 
@@ -91,6 +99,7 @@ final class RsyncServer extends Handler {
         Toast.makeText(appContext,"rsync service stopping", Toast.LENGTH_SHORT).show();
         srv.stop();
         srv = null;
+        cancelNotification();
     }
 
     public RsyncServer(Looper looper, Context appctx, ConnectivityManager cm) {
@@ -115,4 +124,21 @@ final class RsyncServer extends Handler {
         }
     }
 
+    private void displayNotification() {
+        Resources res = appContext.getResources();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(appContext, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.rsync_running)
+            .setContentTitle(res.getString(R.string.notfTitle))
+            .setContentText(res.getString(R.string.notfDescription))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setAutoCancel(false)
+            .setOngoing(true);
+        NotificationManager notificationManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(NotificationId, builder.build());
+    }
+
+    private void cancelNotification() {
+        NotificationManager notificationManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(NotificationId);
+    }
 }
