@@ -13,6 +13,8 @@ import android.os.Process;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.logging.Level;
+
 // FIXME: Terminate service on application shutdown - but not on activity recreation (device flip)
 
 // New Design:
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         HandlerThread ht = new HandlerThread("Rsync Server Thread", Process.THREAD_PRIORITY_BACKGROUND);
         ht.start();
 
+        initLogger();
         server = new RsyncServer(ht.getLooper(), this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE));
 
 
@@ -96,6 +99,11 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         pm.localAddress.observe(this, addressObserver);
+    }
+
+    private void initLogger() {
+      AndroidLoggingHandler.reset(new AndroidLoggingHandler());
+      java.util.logging.Logger.getLogger("yajsync").setLevel(Level.FINEST);
     }
 
     public void startRsyncServer(View view) {

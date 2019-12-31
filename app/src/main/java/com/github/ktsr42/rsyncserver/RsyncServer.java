@@ -7,9 +7,11 @@ import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -64,7 +66,8 @@ final class RsyncServer extends Handler {
         if(srv != null) return;
 
         Toast.makeText(appContext,"Rsync Service Starting", Toast.LENGTH_LONG).show();
-        srv = new LibServer(null);
+        Log.d("RsyncServer", "Starting service");
+        srv = new LibServer(null, Environment.getExternalStorageDirectory().toString(), 12345);
         Object[] mnp = new Object[0];
         try {
             mnp = srv.initServer(localaddr);
@@ -89,6 +92,7 @@ final class RsyncServer extends Handler {
         appstate.portNum.postValue(null);
 
         Toast.makeText(appContext,"rsync service stopping", Toast.LENGTH_SHORT).show();
+        Log.d("RsyncServer", "Stopping service");
         srv.stop();
         srv = null;
     }
