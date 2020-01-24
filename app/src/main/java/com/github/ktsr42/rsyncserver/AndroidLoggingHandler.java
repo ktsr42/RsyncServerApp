@@ -22,6 +22,9 @@ public class AndroidLoggingHandler extends Handler {
   }
 
   @Override
+  public boolean isLoggable(LogRecord record) { return true; }
+
+  @Override
   public void flush() {
   }
 
