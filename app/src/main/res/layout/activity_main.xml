@@ -10,7 +10,7 @@
         android:id="@+id/btnStart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="startRsyncServer"
+        android:onClick="startRsyncServerRequest"
         android:padding="@dimen/std_padding"
         android:text="Start"
         android:textSize="24sp"

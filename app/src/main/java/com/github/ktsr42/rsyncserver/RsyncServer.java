@@ -67,7 +67,7 @@ final class RsyncServer extends Handler {
 
         Toast.makeText(appContext,"Rsync Service Starting", Toast.LENGTH_LONG).show();
         Log.d("RsyncServer", "Starting service");
-        srv = new LibServer(null, Environment.getExternalStorageDirectory().toString(), 12345);
+        srv = new LibServer(null, Environment.getExternalStorageDirectory().toString());
         Object[] mnp = new Object[0];
         try {
             mnp = srv.initServer(localaddr);

@@ -1,19 +1,28 @@
 package com.github.ktsr42.rsyncserver;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Process;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.logging.Level;
+
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 // FIXME: Terminate service on application shutdown - but not on activity recreation (device flip)
 
@@ -37,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private String module;
 
     private RsyncServer server;
+
+    public static int STORAGE_ACCESS_REQUEST_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +117,19 @@ public class MainActivity extends AppCompatActivity {
       java.util.logging.Logger.getLogger("yajsync").setLevel(Level.FINEST);
     }
 
-    public void startRsyncServer(View view) {
+    public void startRsyncServerRequest(View view) {
+        switch(haveWeStorageAccess()) {
+            case 1: startRsyncServer(); break;
+            case 0: break;
+            case -1:
+                Toast.makeText(this, "No storage access", Toast.LENGTH_LONG).show();
+                break;
+            default:
+                Log.e("RsyncServer", "Unknown return value from haveStoragAccess()");
+        }
+    }
+
+    private void startRsyncServer() {
         Message msg = server.obtainMessage();
         msg.arg1 = 1;
         server.sendMessage(msg);
@@ -126,4 +149,44 @@ public class MainActivity extends AppCompatActivity {
         String rsyncline = "rsync://" + ipaddress + ":" + portNum + "/" + module;
         tvwRsyncLine.setText(rsyncline);
     }
+
+    private int checkStoragePermission(String perm) {
+        if(ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED ) return 1;
+
+        if(ActivityCompat.shouldShowRequestPermissionRationale(this, perm)) { return -1; }
+
+        ActivityCompat.requestPermissions(this, new String[]{perm}, STORAGE_ACCESS_REQUEST_ID);
+        return 0;
+    }
+
+    private int haveWeStorageAccess() {
+        int read_access = checkStoragePermission(WRITE_EXTERNAL_STORAGE);
+        int write_access = checkStoragePermission(READ_EXTERNAL_STORAGE);
+
+        if(read_access < write_access) return read_access;
+        else                           return write_access;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if(requestCode != STORAGE_ACCESS_REQUEST_ID) {
+            Log.d("RsyncServer", "Unexpected request code: " + Integer.toString(requestCode));
+            return;
+        }
+
+        // If request is cancelled, the result arrays are empty.
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startRsyncServer();
+        } else {
+            if(grantResults.length == 0) {
+                Log.d("RsyncServer", "No grant results?!?");
+            } else if(grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                Log.d("RsyncServer", "Storage access denied by user");
+            } else {
+                Log.d("RsyncServer", "Unexpected permission code: " + Integer.toString(grantResults[0]));
+            }
+
+        }
+    }
+
 }
