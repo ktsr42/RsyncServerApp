@@ -3,9 +3,6 @@ package com.github.ktsr42.rsyncserver;
 import android.util.Log;
 import java.util.logging.*;
 
-/**
- * Make JUL work on Android.
- */
 public class AndroidLoggingHandler extends Handler {
 
   public static void reset(Handler rootHandler) {

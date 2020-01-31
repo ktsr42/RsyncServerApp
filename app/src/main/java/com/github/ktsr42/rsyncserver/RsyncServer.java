@@ -1,6 +1,5 @@
 package com.github.ktsr42.rsyncserver;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.res.Resources;

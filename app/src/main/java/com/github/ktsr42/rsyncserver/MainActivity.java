@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                     String[] addrparts = s.split("/", 2);
                     if (addrparts.length == 1) {
                         ipaddress = s;                 // no slash in the address string
-                    } else if (addrparts[0].length() ==0 ) {
+                    } else if (addrparts[0].length() == 0 ) {
                         ipaddress = addrparts[1];      // no hostname string, just the ip
                     } else {
                         ipaddress = addrparts[0];      // we found a hostname against all odds
