@@ -51,7 +51,7 @@ final class RsyncServer extends Handler {
                 if(ia.isLoopbackAddress()) continue;
                 if(ia.getClass() != Inet4Address.class) continue;
                 localaddr = ia;
-                start();
+                connectedToWifi();
                 break;
             }
         }
@@ -63,16 +63,32 @@ final class RsyncServer extends Handler {
     private boolean run = false;
     private RsyncServerAppState appstate = RsyncServerAppState.getInstance();
     private Context appContext;
+    private long startRequestTime = 0;
+
+    private int port;
+    private String moduleName;
+
+    private void connectedToWifi() {
+        if(!run) return;
+        if(60000 > System.currentTimeMillis() - startRequestTime) start();  // if more than one minute elapsed since the user asked us to enalble the rsyunc server and the
+        else {                                                              // wifi becoming available, consider the request stale
+            run = false;
+            startRequestTime = 0;
+        }
+    }
 
     private void start() {
         if(!run) return;
-        if(localaddr == null) return; // no wifi
-
         if(srv != null) return;
 
-        Toast.makeText(appContext,"Rsync Service Starting", Toast.LENGTH_LONG).show();
+        if(localaddr == null) {
+            startRequestTime = System.currentTimeMillis();
+            Toast.makeText(appContext,"No Wifi service", Toast.LENGTH_LONG).show();
+            return;  // no wifi
+        }
+
         Log.d("RsyncServer", "Starting service");
-        srv = new LibServer(null, Environment.getExternalStorageDirectory().toString());
+        srv = new LibServer(moduleName, Environment.getExternalStorageDirectory().toString(), port);
         Object[] mnp = new Object[0];
         try {
             mnp = srv.initServer(localaddr);
@@ -84,8 +100,10 @@ final class RsyncServer extends Handler {
         srv.run();
 
         appstate.localAddress.postValue(localaddr.toString());
-        appstate.moduleName.postValue((String)mnp[0]);
-        appstate.portNum.postValue((Integer) mnp[1]);
+        moduleName = (String)mnp[0];
+        appstate.moduleName.postValue(moduleName);
+        port = (Integer)mnp[1];
+        appstate.portNum.postValue(port);
 
         displayNotification();
     }
@@ -98,7 +116,6 @@ final class RsyncServer extends Handler {
         appstate.moduleName.postValue(null);
         appstate.portNum.postValue(null);
 
-        Toast.makeText(appContext,"rsync service stopping", Toast.LENGTH_SHORT).show();
         Log.d("RsyncServer", "Stopping service");
         srv.stop();
         srv = null;

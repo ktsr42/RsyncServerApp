@@ -114,6 +114,12 @@ public class MainActivity extends AppCompatActivity {
         pm.localAddress.observe(this, addressObserver);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopRyncReceiver(null);
+    }
+
     private void initLogger() {
       AndroidLoggingHandler.reset(new AndroidLoggingHandler());
       java.util.logging.Logger.getLogger("yajsync").setLevel(Level.FINEST);
