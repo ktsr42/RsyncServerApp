@@ -1,5 +1,6 @@
 package com.github.ktsr42.rsyncserver;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -46,9 +47,17 @@ public class MainActivity extends AppCompatActivity {
     private String portNum;
     private String module;
 
+    private Boolean running = false;
+    private int lastPortNum = 0;
+    private String lastModule;
+
     private RsyncServer server;
 
     public static int STORAGE_ACCESS_REQUEST_ID = 0;
+    public static String STATE_PORTNUM = "rsyncPort";
+    public static String STATE_MODULENAME = "rsyncModule";
+    public static String STATE_SAVE_TIME = "rsyncStateSaveTime";
+    public static String STATE_RUNNING = "rsyncRunning";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +73,14 @@ public class MainActivity extends AppCompatActivity {
         ht.start();
 
         initLogger();
-        server = new RsyncServer(ht.getLooper(), this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE));
+        if(null != savedInstanceState) {
+            if(10 * 60 * 1000 > System.currentTimeMillis() - savedInstanceState.getLong(STATE_SAVE_TIME)) {
+                lastPortNum = savedInstanceState.getInt(STATE_PORTNUM);
+                lastModule = savedInstanceState.getString(STATE_MODULENAME);
+                running = savedInstanceState.getBoolean(STATE_RUNNING);
+            }
+        }
+        server = new RsyncServer(ht.getLooper(), this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE), lastPortNum, lastModule);
 
         createNotificationChannel();
 
@@ -76,6 +92,11 @@ public class MainActivity extends AppCompatActivity {
                 if(null == integer) s = "";
                 else                s = integer.toString();
                 portNum = s;
+                try {
+                    lastPortNum = Integer.parseInt(s);
+                } catch (NumberFormatException nfx) {
+                    // ignore
+                }
                 tvwPortNumber.setText(s);
                 setRsyncLine();
             }
@@ -86,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(String s) {
                 module = s;
+                if(s != null && s.length() != 0) { lastModule = s; }
+                lastModule = s;
                 tvwModuleName.setText(s);
                 setRsyncLine();
             }
@@ -112,12 +135,23 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         pm.localAddress.observe(this, addressObserver);
+
+        if(running) startRsyncServer();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         stopRyncReceiver(null);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(STATE_PORTNUM, lastPortNum);
+        outState.putString(STATE_MODULENAME, lastModule);
+        outState.putLong(STATE_SAVE_TIME, System.currentTimeMillis());
+        outState.putBoolean(STATE_RUNNING, running);
     }
 
     private void initLogger() {
@@ -141,12 +175,14 @@ public class MainActivity extends AppCompatActivity {
         Message msg = server.obtainMessage();
         msg.arg1 = 1;
         server.sendMessage(msg);
+        running = true;
     }
 
     public void stopRyncReceiver(View view) {
         Message msg = server.obtainMessage();
         msg.arg1 = 0;
         server.sendMessage(msg);
+        running = false;
     }
 
     private void setRsyncLine() {

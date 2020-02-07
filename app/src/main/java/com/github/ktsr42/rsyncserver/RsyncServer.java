@@ -22,6 +22,7 @@ import androidx.core.app.NotificationCompat;
 import com.github.ktsr42.yajsynclib.LibServer;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 
@@ -77,6 +78,10 @@ final class RsyncServer extends Handler {
         }
     }
 
+    private void errorOpeningPort() {
+        Toast.makeText(appContext,"Internal error opening listening port", Toast.LENGTH_LONG).show();
+    }
+
     private void start() {
         if(!run) return;
         if(srv != null) return;
@@ -88,12 +93,22 @@ final class RsyncServer extends Handler {
         }
 
         Log.d("RsyncServer", "Starting service");
-        srv = new LibServer(moduleName, Environment.getExternalStorageDirectory().toString(), port);
         Object[] mnp = new Object[0];
         try {
+            srv = new LibServer(moduleName, Environment.getExternalStorageDirectory().toString(), port);
             mnp = srv.initServer(localaddr);
+        } catch (BindException bex) {
+            try {
+                srv = new LibServer(moduleName, Environment.getExternalStorageDirectory().toString(), 0);
+                mnp = srv.initServer(localaddr);
+            } catch( IOException e) {
+                e.printStackTrace();
+                errorOpeningPort();
+                return;
+            }
         } catch (IOException e) {
             e.printStackTrace();
+            errorOpeningPort();
             return;
         }
 
@@ -122,7 +137,7 @@ final class RsyncServer extends Handler {
         cancelNotification();
     }
 
-    public RsyncServer(Looper looper, Context appctx, ConnectivityManager cm) {
+    public RsyncServer(Looper looper, Context appctx, ConnectivityManager cm, int p, String module) {
         super(looper);
 
         appContext = appctx;
@@ -131,6 +146,9 @@ final class RsyncServer extends Handler {
         nwrb.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
         nwrb.addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET);
         cm.registerNetworkCallback(nwrb.build(), new WifiNetworkCallback());
+
+        port = p;
+        moduleName = module;
     }
 
     @Override
