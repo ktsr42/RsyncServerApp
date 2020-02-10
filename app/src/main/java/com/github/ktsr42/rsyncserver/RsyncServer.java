@@ -11,8 +11,10 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Process;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -65,6 +67,8 @@ final class RsyncServer extends Handler {
     private RsyncServerAppState appstate = RsyncServerAppState.getInstance();
     private Context appContext;
     private long startRequestTime = 0;
+
+    private static RsyncServer singleton_instance;
 
     private int port;
     private String moduleName;
@@ -137,7 +141,7 @@ final class RsyncServer extends Handler {
         cancelNotification();
     }
 
-    public RsyncServer(Looper looper, Context appctx, ConnectivityManager cm, int p, String module) {
+    private RsyncServer(Looper looper, Context appctx, ConnectivityManager cm, int p, String module) {
         super(looper);
 
         appContext = appctx;
@@ -149,6 +153,16 @@ final class RsyncServer extends Handler {
 
         port = p;
         moduleName = module;
+    }
+
+    public static synchronized RsyncServer getRsyncServer(Context appctx, ConnectivityManager cm, int p, String module) {
+        if(singleton_instance == null) {
+            HandlerThread ht = new HandlerThread("Rsync Server Thread", Process.THREAD_PRIORITY_BACKGROUND);
+            ht.start();
+            singleton_instance = new RsyncServer(ht.getLooper(), appctx, cm, p, module);
+        }
+
+        return singleton_instance;
     }
 
     @Override

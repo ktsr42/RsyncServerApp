@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        server = RsyncServerAppState.getRsyncServer(this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE), lastPortNum, lastModule);
+        server = RsyncServer.getRsyncServer(this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE), lastPortNum, lastModule);
 
         createNotificationChannel();
 
