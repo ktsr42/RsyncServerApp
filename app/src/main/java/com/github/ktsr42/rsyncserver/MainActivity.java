@@ -62,10 +62,8 @@ public class MainActivity extends AppCompatActivity {
 
         tvwRsyncLine = findViewById(R.id.tvwRsyncLine);
 
-        HandlerThread ht = new HandlerThread("Rsync Server Thread", Process.THREAD_PRIORITY_BACKGROUND);
-        ht.start();
-
         initLogger();
+
         if(null != savedInstanceState) {
             if(10 * 60 * 1000 > System.currentTimeMillis() - savedInstanceState.getLong(STATE_SAVE_TIME)) {
                 lastPortNum = savedInstanceState.getInt(STATE_PORTNUM);
@@ -73,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
                 running = savedInstanceState.getBoolean(STATE_RUNNING);
             }
         }
-        server = new RsyncServer(ht.getLooper(), this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE), lastPortNum, lastModule);
+
+        server = RsyncServerAppState.getRsyncServer(this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE), lastPortNum, lastModule);
 
         createNotificationChannel();
 
@@ -127,12 +126,6 @@ public class MainActivity extends AppCompatActivity {
         pm.localAddress.observe(this, addressObserver);
 
         if(running) startRsyncServer();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        stopRyncReceiver(null);
     }
 
     @Override
