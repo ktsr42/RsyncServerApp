@@ -10,6 +10,7 @@
         android:id="@+id/btnStart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:onClick="startRsyncServerRequest"
         android:padding="@dimen/std_padding"
         android:text="@string/btnStartRsyncServer"
@@ -21,91 +22,17 @@
     <!-- =============== -->
 
     <TextView
-        android:id="@+id/lblAddress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="16dp"
-        android:padding="@dimen/std_padding"
-        android:text="@string/lblIpAddress"
-        android:textSize="24sp"
-        android:textStyle="italic"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnStart" />
-
-    <TextView
-        android:id="@+id/tvwAddress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/std_padding"
-        android:text="ip address"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lblAddress" />
-
-    <!-- =============== -->
-
-    <TextView
-        android:id="@+id/lblPortNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="16dp"
-        android:padding="@dimen/std_padding"
-        android:text="@string/lblPortNumber"
-        android:textSize="24sp"
-        android:textStyle="italic"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvwAddress" />
-
-    <TextView
-        android:id="@+id/tvwPortNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/std_padding"
-        android:text="portnum"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lblPortNumber" />
-
-    <!-- =============== -->
-
-    <TextView
-        android:id="@+id/lblModuleName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:padding="@dimen/std_padding"
-        android:text="@string/lblModuleName"
-        android:textSize="24sp"
-        android:textStyle="italic"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvwPortNumber" />
-
-    <TextView
-        android:id="@+id/tvwModuleName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/std_padding"
-        android:text="module"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lblModuleName" />
-
-    <!-- =============== -->
-
-    <TextView
         android:id="@+id/tvwRsyncLine"
+        android:layout_marginTop="24dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:padding="@dimen/std_padding"
         android:text="rsyncline"
-        android:textSize="20sp"
+        android:textSize="24sp"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvwModuleName" />
+        app:layout_constraintTop_toBottomOf="@+id/btnStart" />
 
     <!-- =============== -->
 

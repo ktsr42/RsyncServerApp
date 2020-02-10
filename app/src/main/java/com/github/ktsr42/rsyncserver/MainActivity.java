@@ -37,10 +37,6 @@ import static com.github.ktsr42.rsyncserver.RsyncServer.NOTIFICATION_CHANNEL_ID;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView tvwModuleName;
-    private TextView tvwPortNumber;
-    private TextView tvwAddress;
-
     private TextView tvwRsyncLine;
 
     private String ipaddress;
@@ -64,9 +60,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tvwModuleName = findViewById(R.id.tvwModuleName);
-        tvwPortNumber = findViewById(R.id.tvwPortNumber);
-        tvwAddress = findViewById(R.id.tvwAddress);
         tvwRsyncLine = findViewById(R.id.tvwRsyncLine);
 
         HandlerThread ht = new HandlerThread("Rsync Server Thread", Process.THREAD_PRIORITY_BACKGROUND);
@@ -97,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
                 } catch (NumberFormatException nfx) {
                     // ignore
                 }
-                tvwPortNumber.setText(s);
                 setRsyncLine();
             }
         };
@@ -109,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
                 module = s;
                 if(s != null && s.length() != 0) { lastModule = s; }
                 lastModule = s;
-                tvwModuleName.setText(s);
                 setRsyncLine();
             }
         };
@@ -130,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
                         ipaddress = addrparts[0];      // we found a hostname against all odds
                     }
                 }
-                tvwAddress.setText(ipaddress);
                 setRsyncLine();
             }
         };
@@ -242,8 +232,7 @@ public class MainActivity extends AppCompatActivity {
             int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
             channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
+            // Register the channel with the system
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
