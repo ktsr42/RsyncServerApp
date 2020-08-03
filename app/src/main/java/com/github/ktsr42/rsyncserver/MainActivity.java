@@ -18,6 +18,7 @@ import android.os.Message;
 import android.os.Process;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -168,13 +169,19 @@ public class MainActivity extends AppCompatActivity {
         running = false;
     }
 
+    private void removeRsyncLine() {
+        tvwRsyncLine.setText("");
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
     private void setRsyncLine() {
-        if(ipaddress == null || ipaddress == "") { tvwRsyncLine.setText(""); return; }
-        if(portNum == null || portNum == "") { tvwRsyncLine.setText(""); return; }
-        if(module == null || module == "") { tvwRsyncLine.setText(""); return; }
+        if(ipaddress == null || ipaddress == "") { removeRsyncLine(); return; }
+        if(portNum == null || portNum == "") { removeRsyncLine(); return; }
+        if(module == null || module == "") { removeRsyncLine(); return; }
 
         String rsyncline = "rsync://" + ipaddress + ":" + portNum + "/" + module;
         tvwRsyncLine.setText(rsyncline);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private int checkStoragePermission(String perm) {
