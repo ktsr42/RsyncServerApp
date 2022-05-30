@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:onClick="stopRyncReceiver"
+        android:onClick="stopRsyncReceiver"
         android:padding="@dimen/std_padding"
         android:text="Stop"
         android:textSize="24sp"

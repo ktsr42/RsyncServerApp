@@ -9,13 +9,16 @@ import androidx.lifecycle.Observer;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Process;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -144,15 +147,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startRsyncServerRequest(View view) {
-        switch(haveWeStorageAccess()) {
-            case 1: startRsyncServer(); break;
-            case 0: break;
-            case -1:
-                Toast.makeText(this, "No storage access", Toast.LENGTH_LONG).show();
-                break;
-            default:
-                Log.e("RsyncServer", "Unknown return value from haveStoragAccess()");
+        if(!checkStorageAccess()) {
+            Toast.makeText(this, "No storage access (yet?)", Toast.LENGTH_SHORT).show();
+            return;
         }
+        startRsyncServer();
     }
 
     private void startRsyncServer() {
@@ -162,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         running = true;
     }
 
-    public void stopRyncReceiver(View view) {
+    public void stopRsyncReceiver(View view) {
         Message msg = server.obtainMessage();
         msg.arg1 = 0;
         server.sendMessage(msg);
@@ -184,26 +183,50 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
+    // API Level 26 to 29
     private int checkStoragePermission(String perm) {
         if(ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED ) return 1;
-
         if(ActivityCompat.shouldShowRequestPermissionRationale(this, perm)) { return -1; }
-
-        ActivityCompat.requestPermissions(this, new String[]{perm}, STORAGE_ACCESS_REQUEST_ID);
         return 0;
     }
 
-    private int haveWeStorageAccess() {
-        int read_access = checkStoragePermission(WRITE_EXTERNAL_STORAGE);
-        int write_access = checkStoragePermission(READ_EXTERNAL_STORAGE);
+    private boolean checkStorageAccess() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(intent);
+                return false;
+            }
+            return true;
+        } else if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int read_access = checkStoragePermission(WRITE_EXTERNAL_STORAGE);
+            int write_access = checkStoragePermission(READ_EXTERNAL_STORAGE);
+            if(read_access == -1 | write_access == -1) return false; // no access
+            if(read_access == 1 & write_access == 1) return true; // go ahead
 
-        if(read_access < write_access) return read_access;
-        else                           return write_access;
+            // we need to request the permissions from the user, figure out which ones
+            String[] perms_required = null;
+            if(read_access == 0 & write_access == 0) {
+                perms_required = new String[] {READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE};
+            } else if(read_access == 0) {
+                perms_required = new String[] {READ_EXTERNAL_STORAGE};
+            } else {
+                perms_required = new String[] {WRITE_EXTERNAL_STORAGE};
+            }
+            if(perms_required == null | perms_required.length == 0) {
+                throw new RuntimeException("Sanity check for permission request has failed.");
+            }
+            ActivityCompat.requestPermissions(this, perms_required, STORAGE_ACCESS_REQUEST_ID);
+            return false;
+        }
+
+        // default: API Level < 25 - Just go ahead
+        return true;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if(requestCode != STORAGE_ACCESS_REQUEST_ID) {
+        if (requestCode != STORAGE_ACCESS_REQUEST_ID) {
             Log.d("RsyncServer", "Unexpected request code: " + Integer.toString(requestCode));
             return;
         }
@@ -212,14 +235,13 @@ public class MainActivity extends AppCompatActivity {
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             startRsyncServer();
         } else {
-            if(grantResults.length == 0) {
+            if (grantResults.length == 0) {
                 Log.d("RsyncServer", "No grant results?!?");
-            } else if(grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 Log.d("RsyncServer", "Storage access denied by user");
             } else {
                 Log.d("RsyncServer", "Unexpected permission code: " + Integer.toString(grantResults[0]));
             }
-
         }
     }
 
