@@ -3,7 +3,6 @@
     <string name="lblPortNumber">Port Number</string>
     <string name="btnStartRsyncServer">Start</string>
     <string name="lblIpAddress">IP Address</string>
-    <string name="lblModuleName">Module Name</string>
     <string name="nchName">Rsync Server</string>
     <string name="nchDescription">Rsync Server app - current state</string>
     <string name="notfTitle">Rsync Server active</string>

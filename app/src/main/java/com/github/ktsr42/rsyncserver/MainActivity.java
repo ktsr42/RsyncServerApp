@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
             return true;
-        } else if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        } else {
             int read_access = checkStoragePermission(WRITE_EXTERNAL_STORAGE);
             int write_access = checkStoragePermission(READ_EXTERNAL_STORAGE);
             if(read_access == -1 | write_access == -1) return false; // no access
@@ -219,16 +219,12 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, perms_required, STORAGE_ACCESS_REQUEST_ID);
             return false;
         }
-
-        // default: API Level < 25 - Just go ahead
-        return true;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode != STORAGE_ACCESS_REQUEST_ID) {
-            Log.d("RsyncServer", "Unexpected request code: " + Integer.toString(requestCode));
-            return;
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
         // If request is cancelled, the result arrays are empty.
@@ -246,17 +242,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.nchName);
-            String description = getString(R.string.nchDescription);
-            int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-            // Register the channel with the system
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
+        CharSequence name = getString(R.string.nchName);
+        String description = getString(R.string.nchDescription);
+        int importance = NotificationManager.IMPORTANCE_LOW;
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+        channel.setDescription(description);
+        // Register the channel with the system
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 }
