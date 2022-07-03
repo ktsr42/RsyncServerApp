@@ -9,6 +9,7 @@ import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -76,7 +77,7 @@ final class RsyncServer extends Handler {
 
     private void connectedToWifi() {
         if(!run) return;
-        if(60000 > System.currentTimeMillis() - startRequestTime) start();  // if more than one minute elapsed since the user asked us to enalble the rsyunc server and the
+        if(60000 > System.currentTimeMillis() - startRequestTime) start();  // if more than one minute elapsed since the user asked us to enalble the rsync server and the
         else {                                                              // wifi becoming available, consider the request stale
             run = false;
             startRequestTime = 0;
@@ -98,13 +99,21 @@ final class RsyncServer extends Handler {
         }
 
         Log.d("RsyncServer", "Starting service");
-        Object[] mnp = new Object[0];
+        Object[] mnp = null;
+        // FIXME: Environment.getExternalStorageDirectory() is deprecated in Android 11.
+        // its replacement is Context.getExternalFilesDir (https://developer.android.com/reference/android/content/Context#getExternalFilesDir(java.lang.String))
+        // This function accepts a null argument, but it points to a path that is not identical with
+        // the return value of Environment.getExternalStorageDirectory().
+        // We have to do more research, potentially switching to multiple rsync modules; one per
+        // string argument accepted by getExternalFilesDir.
+        String sharedStorage = Environment.getExternalStorageDirectory().toString();
+
         try {
-            srv = new LibServer(moduleName, Environment.getExternalStorageDirectory().toString(), port);
+            srv = new LibServer(moduleName, sharedStorage, port);
             mnp = srv.initServer(localaddr);
         } catch (BindException bex) {
             try {
-                srv = new LibServer(moduleName, Environment.getExternalStorageDirectory().toString(), 0);
+                srv = new LibServer(moduleName, sharedStorage, 0);
                 mnp = srv.initServer(localaddr);
             } catch( IOException e) {
                 e.printStackTrace();
