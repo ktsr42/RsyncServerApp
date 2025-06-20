@@ -77,7 +77,7 @@ final class RsyncServer extends Handler {
 
     private void connectedToWifi() {
         if(!run) return;
-        if(60000 > System.currentTimeMillis() - startRequestTime) start();  // if more than one minute elapsed since the user asked us to enalble the rsync server and the
+        if(60000 > System.currentTimeMillis() - startRequestTime) start();  // if more than one minute elapsed since the user asked us to enable the rsync server and the
         else {                                                              // wifi becoming available, consider the request stale
             run = false;
             startRequestTime = 0;
