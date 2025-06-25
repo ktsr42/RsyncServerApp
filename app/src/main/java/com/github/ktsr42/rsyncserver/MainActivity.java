@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private Boolean running = false;
     private int lastPortNum = 0;
     private String lastModule;
+    private String password;
 
     private RsyncServer server;
 
@@ -155,8 +156,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startRsyncServer() {
+        Bundle b = new Bundle();
+        b.putString("password", null);
         Message msg = server.obtainMessage();
         msg.arg1 = 1;
+        msg.setData(b);
         server.sendMessage(msg);
         running = true;
     }

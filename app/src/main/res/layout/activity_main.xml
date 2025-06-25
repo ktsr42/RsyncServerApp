@@ -6,6 +6,82 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/tvwHeadline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="monospace"
+        android:padding="@dimen/std_padding"
+        android:text="Rsync Server"
+        android:textAlignment="center"
+        android:textSize="32dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- =============== -->
+
+    <TextView
+        android:id="@+id/tvwPasswordoptions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="133dp"
+        android:fontFamily="monospace"
+        android:padding="@dimen/std_padding"
+        android:text="Select password"
+        android:textAlignment="center"
+        android:textSize="@dimen/ui_text_size"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvwHeadline" />
+
+    <!-- =============== -->
+
+    <RadioGroup
+        android:id="@+id/passwordSelection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/std_padding"
+        android:textSize="@dimen/ui_text_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvwPasswordoptions">
+
+        <RadioButton
+            android:id="@+id/password_none"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="None"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <RadioButton
+            android:id="@+id/password_random"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Random password"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/password_none" />
+
+        <RadioButton
+            android:id="@+id/password_enter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enter password:"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/password_none" />
+    </RadioGroup>
+
+    <!-- =============== -->
+
     <Button
         android:id="@+id/btnStart"
         android:layout_width="match_parent"
@@ -14,10 +90,10 @@
         android:onClick="startRsyncServerRequest"
         android:padding="@dimen/std_padding"
         android:text="@string/btnStartRsyncServer"
-        android:textSize="24sp"
+        android:textSize="@dimen/ui_text_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/passwordSelection" />
 
     <!-- =============== -->
 
@@ -44,9 +120,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:onClick="stopRsyncReceiver"
-        android:padding="@dimen/std_padding"
+        android:paddin="@dimen/std_padding"
         android:text="Stop"
-        android:textSize="24sp"
+        android:textSize="@dimen/ui_text_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvwRsyncLine" />
