@@ -22,10 +22,14 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Random;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -42,6 +46,10 @@ import static com.github.ktsr42.rsyncserver.RsyncServer.NOTIFICATION_CHANNEL_ID;
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvwRsyncLine;
+    private RadioButton rdbtnNoPassword;
+    private RadioButton rdbtnRandomPassword;
+    private RadioButton rdbtnCustomPassword;
+    private EditText tedtCustomPassword;
 
     private String ipaddress;
     private String portNum;
@@ -50,7 +58,9 @@ public class MainActivity extends AppCompatActivity {
     private Boolean running = false;
     private int lastPortNum = 0;
     private String lastModule;
-    private String password;
+    private String passwordSelector = "none";
+    private String randomPassword;
+    private String userPassword;
 
     private RsyncServer server;
 
@@ -59,6 +69,9 @@ public class MainActivity extends AppCompatActivity {
     public static String STATE_MODULENAME = "rsyncModule";
     public static String STATE_SAVE_TIME = "rsyncStateSaveTime";
     public static String STATE_RUNNING = "rsyncRunning";
+    public static String STATE_PASSWORD = "rsyncPasswordSet";  // none, random or custom
+    public static String STATE_PASSWORD_RANDOM = "rsyncPasswordRandom";
+    public static String STATE_PASSWORD_CUSTOM = "rsyncPasswordCustom";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,15 +79,36 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         tvwRsyncLine = findViewById(R.id.tvwRsyncLine);
+        rdbtnNoPassword = findViewById(R.id.password_none);
+        rdbtnRandomPassword = findViewById(R.id.password_random);
+        rdbtnCustomPassword = findViewById(R.id.password_enter);
+        tedtCustomPassword = findViewById(R.id.password_entry);
 
         initLogger();
+
+        passwordSelector = "none";
+        randomPassword = new Random().ints(10, 48, 122).mapToObj(i -> String.valueOf((char)i)).collect(Collectors.joining());
+        userPassword = "";
 
         if(null != savedInstanceState) {
             if(10 * 60 * 1000 > System.currentTimeMillis() - savedInstanceState.getLong(STATE_SAVE_TIME)) {
                 lastPortNum = savedInstanceState.getInt(STATE_PORTNUM);
                 lastModule = savedInstanceState.getString(STATE_MODULENAME);
                 running = savedInstanceState.getBoolean(STATE_RUNNING);
+                passwordSelector = savedInstanceState.getString(STATE_PASSWORD);
+                randomPassword = savedInstanceState.getString(STATE_PASSWORD_RANDOM, randomPassword);
+                userPassword = savedInstanceState.getString(STATE_PASSWORD_CUSTOM, "");
             }
+        }
+
+        rdbtnRandomPassword.setText(rdbtnRandomPassword.getText() + randomPassword); // append the random password to the label
+        tedtCustomPassword.setText(userPassword);
+        if(passwordSelector.equals("random")) {
+            rdbtnRandomPassword.toggle();
+        } else if(passwordSelector.equals("custom")) {
+            rdbtnCustomPassword.toggle();
+        } else {
+            rdbtnNoPassword.toggle();
         }
 
         server = RsyncServer.getRsyncServer(this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE), lastPortNum, lastModule);
@@ -136,10 +170,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        userPassword = tedtCustomPassword.getText().toString();
         outState.putInt(STATE_PORTNUM, lastPortNum);
         outState.putString(STATE_MODULENAME, lastModule);
         outState.putLong(STATE_SAVE_TIME, System.currentTimeMillis());
         outState.putBoolean(STATE_RUNNING, running);
+        outState.putString(STATE_PASSWORD, passwordSelector);
+        outState.putString(STATE_PASSWORD_RANDOM, randomPassword);
+        outState.putString(STATE_PASSWORD_CUSTOM, userPassword);
     }
 
     private void initLogger() {
@@ -148,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startRsyncServerRequest(View view) {
+        userPassword = tedtCustomPassword.getText().toString();
         if(!checkStorageAccess()) {
             Toast.makeText(this, "No storage access (yet?)", Toast.LENGTH_SHORT).show();
             return;
@@ -155,9 +194,27 @@ public class MainActivity extends AppCompatActivity {
         startRsyncServer();
     }
 
+    public void setPasswordNone(View view) {
+        passwordSelector = "none";
+        tedtCustomPassword.setEnabled(false);
+    }
+    public void setPasswordRandom(View view) {
+        passwordSelector = "random";
+        tedtCustomPassword.setEnabled(false);
+    }
+    public void setPasswordCustom(View view){
+        passwordSelector = "custom";
+        tedtCustomPassword.setEnabled(true);
+    }
+
     private void startRsyncServer() {
         Bundle b = new Bundle();
-        b.putString("password", null);
+        String password = null;
+        if("random".equals(passwordSelector))
+            password = randomPassword;
+        else if("custom".equals(passwordSelector))
+            password = userPassword;
+        b.putString("password", password);
         Message msg = server.obtainMessage();
         msg.arg1 = 1;
         msg.setData(b);

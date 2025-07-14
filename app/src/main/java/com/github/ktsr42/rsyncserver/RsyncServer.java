@@ -74,6 +74,7 @@ final class RsyncServer extends Handler {
 
     private int port;
     private String moduleName;
+    private String password = null;
 
     private void connectedToWifi() {
         if(!run) return;
@@ -182,7 +183,7 @@ final class RsyncServer extends Handler {
             stop();
         } else if(msg.arg1 == 1) {
             run = true;
-            String password = msg.getData().getString("password");  // FIXME: what do we get if no password has been set?
+            password = msg.getData().getString("password");  // FIXME: what do we get if no password has been set?
             start();
         }
     }

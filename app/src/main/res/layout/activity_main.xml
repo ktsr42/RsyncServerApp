@@ -7,37 +7,20 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/tvwHeadline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:fontFamily="monospace"
-        android:padding="@dimen/std_padding"
-        android:text="Rsync Server"
-        android:textAlignment="center"
-        android:textSize="32dp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- =============== -->
-
-    <TextView
         android:id="@+id/tvwPasswordoptions"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="133dp"
         android:fontFamily="monospace"
         android:padding="@dimen/std_padding"
-        android:text="Select password"
-        android:textAlignment="center"
+        android:text="Password"
+        android:textAlignment="textStart"
         android:textSize="@dimen/ui_text_size"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvwHeadline" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- =============== -->
 
@@ -57,27 +40,30 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="None"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
+            android:onClick="setPasswordNone"
+            />
         <RadioButton
             android:id="@+id/password_random"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Random password"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/password_none" />
-
+            android:text="Random password: "
+            android:onClick="setPasswordRandom"
+            />
         <RadioButton
             android:id="@+id/password_enter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Enter password:"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/password_none" />
+            android:onClick="setPasswordCustom"
+            />
+        <EditText
+            android:id="@+id/password_entry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:textSize="@dimen/ui_text_size"
+            />
     </RadioGroup>
 
     <!-- =============== -->
@@ -120,7 +106,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:onClick="stopRsyncReceiver"
-        android:paddin="@dimen/std_padding"
+        android:padding="@dimen/std_padding"
         android:text="Stop"
         android:textSize="@dimen/ui_text_size"
         app:layout_constraintEnd_toEndOf="parent"
