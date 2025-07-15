@@ -110,11 +110,11 @@ final class RsyncServer extends Handler {
         String sharedStorage = Environment.getExternalStorageDirectory().toString();
 
         try {
-            srv = new LibServer(moduleName, sharedStorage, port);
+            srv = new LibServer(moduleName, sharedStorage, port, password);
             mnp = srv.initServer(localaddr);
         } catch (BindException bex) {
             try {
-                srv = new LibServer(moduleName, sharedStorage, 0);
+                srv = new LibServer(moduleName, sharedStorage, 0, password);
                 mnp = srv.initServer(localaddr);
             } catch( IOException e) {
                 e.printStackTrace();
