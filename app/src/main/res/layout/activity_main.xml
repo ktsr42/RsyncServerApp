@@ -69,13 +69,12 @@
     <!-- =============== -->
 
     <Button
-        android:id="@+id/btnStart"
+        android:id="@+id/btnStartStop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:onClick="startRsyncServerRequest"
         android:padding="@dimen/std_padding"
-        android:text="@string/btnStartRsyncServer"
         android:textSize="@dimen/ui_text_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -97,21 +96,7 @@
         android:textIsSelectable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnStart" />
+        app:layout_constraintTop_toBottomOf="@+id/btnStartStop" />
 
-    <!-- =============== -->
-
-    <Button
-        android:id="@+id/btnStop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:onClick="stopRsyncReceiver"
-        android:padding="@dimen/std_padding"
-        android:text="Stop"
-        android:textSize="@dimen/ui_text_size"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvwRsyncLine" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

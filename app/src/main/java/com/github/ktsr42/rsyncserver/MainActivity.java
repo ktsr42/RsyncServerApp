@@ -22,6 +22,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -45,6 +46,7 @@ import static com.github.ktsr42.rsyncserver.RsyncServer.NOTIFICATION_CHANNEL_ID;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Button btnStartStop;
     private TextView tvwRsyncLine;
     private RadioButton rdbtnNoPassword;
     private RadioButton rdbtnRandomPassword;
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        btnStartStop = findViewById(R.id.btnStartStop);
         tvwRsyncLine = findViewById(R.id.tvwRsyncLine);
         rdbtnNoPassword = findViewById(R.id.password_none);
         rdbtnRandomPassword = findViewById(R.id.password_random);
@@ -99,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
                 randomPassword = savedInstanceState.getString(STATE_PASSWORD_RANDOM, randomPassword);
                 userPassword = savedInstanceState.getString(STATE_PASSWORD_CUSTOM, "");
             }
+        } else {
+            btnStartStop.setText("Start");
         }
 
         rdbtnRandomPassword.setText(rdbtnRandomPassword.getText() + randomPassword); // append the random password to the label
@@ -220,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
         msg.setData(b);
         server.sendMessage(msg);
         running = true;
+        btnStartStop.setText("Stop");
     }
 
     public void stopRsyncReceiver(View view) {
@@ -227,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
         msg.arg1 = 0;
         server.sendMessage(msg);
         running = false;
+        btnStartStop.setText("Start");
     }
 
     private void removeRsyncLine() {
