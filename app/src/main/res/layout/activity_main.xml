@@ -94,6 +94,7 @@
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:textIsSelectable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnStart" />
