@@ -225,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
         msg.setData(b);
         server.sendMessage(msg);
         running = true;
-        btnStartStop.setText("Stop");
     }
 
     public void stopRsyncReceiver(View view) {
@@ -233,12 +232,12 @@ public class MainActivity extends AppCompatActivity {
         msg.arg1 = 0;
         server.sendMessage(msg);
         running = false;
-        btnStartStop.setText("Start");
     }
 
     private void removeRsyncLine() {
         tvwRsyncLine.setText("");
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        btnStartStop.setText("START");
     }
 
     private void setRsyncLine() {
@@ -249,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
         String rsyncline = "rsync://" + ipaddress + ":" + portNum + "/" + module;
         tvwRsyncLine.setText(rsyncline);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        btnStartStop.setText("STOP");
     }
 
     // API Level 26 to 29
