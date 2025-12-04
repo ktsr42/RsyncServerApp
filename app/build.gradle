@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 33
-    buildToolsVersion '30.0.3'
+    // buildToolsVersion '30.0.3'
     defaultConfig {
         applicationId "com.github.ktsr42.rsyncserver"
         minSdkVersion 26
@@ -19,14 +19,14 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = 11
+        targetCompatibility = 11
     }
 
-    namespace 'com.github.ktsr42.rsyncserver'
+    namespace='com.github.ktsr42.rsyncserver'
 
     lint {
-        baseline file('lint-baseline.xml')
+        baseline=file('lint-baseline.xml')
     }
 }
 
