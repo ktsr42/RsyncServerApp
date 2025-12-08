@@ -73,7 +73,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:onClick="startRsyncServerRequest"
+        android:onClick="startStopButtonHandler"
         android:padding="@dimen/std_padding"
         android:textSize="@dimen/ui_text_size"
         app:layout_constraintEnd_toEndOf="parent"

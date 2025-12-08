@@ -30,6 +30,8 @@ android {
     }
 }
 
+def yajsync_ver="0.9.2"
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.6.1'

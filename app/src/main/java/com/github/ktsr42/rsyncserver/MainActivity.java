@@ -1,6 +1,5 @@
 package com.github.ktsr42.rsyncserver;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -15,9 +14,7 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.HandlerThread;
 import android.os.Message;
-import android.os.Process;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -36,13 +33,6 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 import static com.github.ktsr42.rsyncserver.RsyncServer.NOTIFICATION_CHANNEL_ID;
-
-// New Design:
-// Create HandlerThread in onCreate
-// implement service as a handler
-// hold handle to
-// Use runOnUIThread or view.post to update activity from hand;er
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -101,9 +91,14 @@ public class MainActivity extends AppCompatActivity {
                 passwordSelector = savedInstanceState.getString(STATE_PASSWORD);
                 randomPassword = savedInstanceState.getString(STATE_PASSWORD_RANDOM, randomPassword);
                 userPassword = savedInstanceState.getString(STATE_PASSWORD_CUSTOM, "");
+
+            } else {
+                btnStartStop.setText("Start");
+                running = false;
             }
         } else {
             btnStartStop.setText("Start");
+            running = false;
         }
 
         rdbtnRandomPassword.setText(rdbtnRandomPassword.getText() + randomPassword); // append the random password to the label
@@ -168,8 +163,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         pm.localAddress.observe(this, addressObserver);
-
-        if(running) startRsyncServer();
     }
 
     @Override
@@ -190,13 +183,19 @@ public class MainActivity extends AppCompatActivity {
       java.util.logging.Logger.getLogger("yajsync").setLevel(Level.FINEST);
     }
 
-    public void startRsyncServerRequest(View view) {
-        userPassword = tedtCustomPassword.getText().toString();
-        if(!checkStorageAccess()) {
-            Toast.makeText(this, "No storage access (yet?)", Toast.LENGTH_SHORT).show();
-            return;
+    public void startStopButtonHandler(View view) {
+        if(running) {
+            Message msg = server.obtainMessage();
+            msg.arg1 = 0;
+            server.sendMessage(msg);
+        } else {
+            userPassword = tedtCustomPassword.getText().toString();
+            if (!checkStorageAccess()) {
+                Toast.makeText(this, "No storage access (yet?)", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            startServer();
         }
-        startRsyncServer();
     }
 
     public void setPasswordNone(View view) {
@@ -212,7 +211,9 @@ public class MainActivity extends AppCompatActivity {
         tedtCustomPassword.setEnabled(true);
     }
 
-    private void startRsyncServer() {
+    private void startServer() {
+        if(running) return; // noting to do
+
         Bundle b = new Bundle();
         String password = null;
         if("random".equals(passwordSelector))
@@ -224,20 +225,13 @@ public class MainActivity extends AppCompatActivity {
         msg.arg1 = 1;
         msg.setData(b);
         server.sendMessage(msg);
-        running = true;
-    }
-
-    public void stopRsyncReceiver(View view) {
-        Message msg = server.obtainMessage();
-        msg.arg1 = 0;
-        server.sendMessage(msg);
-        running = false;
     }
 
     private void removeRsyncLine() {
         tvwRsyncLine.setText("");
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         btnStartStop.setText("START");
+        running = false;
     }
 
     private void setRsyncLine() {
@@ -249,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
         tvwRsyncLine.setText(rsyncline);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         btnStartStop.setText("STOP");
+        running = true;
     }
 
     // API Level 26 to 29
@@ -297,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
 
         // If request is cancelled, the result arrays are empty.
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            startRsyncServer();
+            startServer();
         } else {
             if (grantResults.length == 0) {
                 Log.d("RsyncServer", "No grant results?!?");
