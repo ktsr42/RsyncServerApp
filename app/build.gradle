@@ -1,15 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 33
-    // buildToolsVersion '30.0.3'
+    compileSdkVersion 34
     defaultConfig {
         applicationId "com.github.ktsr42.rsyncserver"
         minSdkVersion 26
         targetSdkVersion 33
         // always update versionCode and versionName together!
-        versionCode 3
-        versionName "0.9.9"
+        versionCode 4
+        versionName "0.9.10"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -29,8 +28,6 @@ android {
         baseline=file('lint-baseline.xml')
     }
 }
-
-def yajsync_ver="0.9.2"
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
