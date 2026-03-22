@@ -5,10 +5,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 
+import android.app.Dialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
@@ -20,11 +23,15 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -33,6 +40,8 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 import static com.github.ktsr42.rsyncserver.RsyncServer.NOTIFICATION_CHANNEL_ID;
+
+import hendrawd.storageutil.library.StorageUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,7 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String ipaddress;
     private String portNum;
-    private String module;
+    private String[] moduleNames;
+    private String[] modulePaths;
 
     private Boolean running = false;
     private int lastPortNum = 0;
@@ -64,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
     public static String STATE_PASSWORD = "rsyncPasswordSet";  // none, random or custom
     public static String STATE_PASSWORD_RANDOM = "rsyncPasswordRandom";
     public static String STATE_PASSWORD_CUSTOM = "rsyncPasswordCustom";
+    public static String STATE_VERSION_WHATSNEW = "whatsNewVersionShown";
+    private boolean dontShowWhatsNewAgain = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +95,11 @@ public class MainActivity extends AppCompatActivity {
         randomPassword = new Random().ints(10, 48, 122).mapToObj(i -> String.valueOf((char)i)).collect(Collectors.joining());
         userPassword = "";
 
+        getStoragePaths();
+        if(0 == moduleNames.length) {
+            Toast.makeText(this, "Warning - Could not find any shared storage paths", Toast.LENGTH_LONG).show();
+        }
+
         if(null != savedInstanceState) {
             if(10 * 60 * 1000 > System.currentTimeMillis() - savedInstanceState.getLong(STATE_SAVE_TIME)) {
                 lastPortNum = savedInstanceState.getInt(STATE_PORTNUM);
@@ -91,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
                 passwordSelector = savedInstanceState.getString(STATE_PASSWORD);
                 randomPassword = savedInstanceState.getString(STATE_PASSWORD_RANDOM, randomPassword);
                 userPassword = savedInstanceState.getString(STATE_PASSWORD_CUSTOM, "");
-
             } else {
                 btnStartStop.setText("Start");
                 running = false;
@@ -111,7 +127,12 @@ public class MainActivity extends AppCompatActivity {
             rdbtnNoPassword.toggle();
         }
 
-        server = RsyncServer.getRsyncServer(this.getApplicationContext(), (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE), lastPortNum, lastModule);
+        server = RsyncServer.getRsyncServer(
+                this.getApplicationContext(),
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE),
+                lastPortNum,
+                moduleNames,
+                modulePaths);
 
         createNotificationChannel();
 
@@ -133,17 +154,6 @@ public class MainActivity extends AppCompatActivity {
         };
         pm.portNum.observe(this, portNumObserver);
 
-        final Observer<String> moduleNameObserver = new Observer<String>() {
-            @Override
-            public void onChanged(String s) {
-                module = s;
-                if(s != null && s.length() != 0) { lastModule = s; }
-                lastModule = s;
-                setRsyncLine();
-            }
-        };
-        pm.moduleName.observe(this, moduleNameObserver);
-
         final Observer<String> addressObserver = new Observer<String>() {
             @Override
             public void onChanged(String s) {
@@ -163,6 +173,40 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         pm.localAddress.observe(this, addressObserver);
+
+        showWhatsNewPopup();
+    }
+
+    private String getAppVersion() {
+        try {
+            Context context = this.getApplicationContext();
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            return pInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return "-- UNKNOWN --";
+        }
+    }
+
+    private void showWhatsNewPopup() {
+        String ourVersion = getAppVersion();
+        String releaseNotes = ReleaseNotes.getReleaseNotes(ourVersion);
+        if(null == releaseNotes) return;  // No release notes for this release -> done
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        String lastWhatsNewVersion = sharedPref.getString(STATE_VERSION_WHATSNEW, "");
+        if(lastWhatsNewVersion.equals(ourVersion)) return;  // user has already seen the release notes -> done
+
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.whatsnew_dialog);
+        TextView tvwTitle = dialog.findViewById(R.id.whats_new_title);
+        tvwTitle.setText("Whats New - " + ourVersion);
+        TextView tvwNotes = dialog.findViewById(R.id.whats_new_content);
+        tvwNotes.setText(releaseNotes);
+        Button closeButton = dialog.findViewById(R.id.close_button);
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+        CheckBox dontShowCheckbox = dialog.findViewById(R.id.dont_show_again);
+        dontShowCheckbox.setOnClickListener(cb -> { dontShowWhatsNewAgain = dontShowCheckbox.isChecked(); } );
+        dialog.show();
     }
 
     @Override
@@ -176,6 +220,45 @@ public class MainActivity extends AppCompatActivity {
         outState.putString(STATE_PASSWORD, passwordSelector);
         outState.putString(STATE_PASSWORD_RANDOM, randomPassword);
         outState.putString(STATE_PASSWORD_CUSTOM, userPassword);
+    }
+
+    @Override
+    protected void onStop() {
+        if(dontShowWhatsNewAgain) {
+            SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(STATE_VERSION_WHATSNEW, getAppVersion());
+            editor.apply();
+            editor.commit();
+        }
+        super.onStop();
+    }
+
+
+    private void getStoragePaths() {
+        List<String> allStorageDirs = Arrays.asList(StorageUtil.getStorageDirectories(this));
+        List<String> mountedDirs = allStorageDirs.stream().filter(path -> {
+            return android.os.Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState(new File(path)));
+        }).collect(Collectors.toList());
+
+        moduleNames = new String[mountedDirs.size()];
+        modulePaths = new String[mountedDirs.size()];
+
+        int idx = 0, emulated = 0, external = 0;
+        for(String path : mountedDirs) {
+            File filePath = new File(path);
+            if(Environment.isExternalStorageEmulated(filePath)) {
+                emulated++;
+                moduleNames[idx] = String.format("Emulated_%d", emulated);
+                modulePaths[idx] = path;
+            } else {
+                external++;
+                moduleNames[idx] = String.format("SDCard_%d", external);
+                modulePaths[idx] = path;
+            }
+            idx++;
+        }
+
     }
 
     private void initLogger() {
@@ -235,12 +318,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setRsyncLine() {
-        if(ipaddress == null || ipaddress == "") { removeRsyncLine(); return; }
-        if(portNum == null || portNum == "") { removeRsyncLine(); return; }
-        if(module == null || module == "") { removeRsyncLine(); return; }
+        if(ipaddress == null || ipaddress.isEmpty()) { removeRsyncLine(); return; }
+        if(portNum == null || portNum.isEmpty()) { removeRsyncLine(); return; }
 
-        String rsyncline = "rsync://" + ipaddress + ":" + portNum + "/" + module;
-        tvwRsyncLine.setText(rsyncline);
+        StringBuilder sb = new StringBuilder();
+        for(String moduleName : moduleNames) {
+            if(sb.length() > 0)
+                sb.append("\n");
+            sb.append(String.format("rsync://%s:%s/%s", ipaddress, portNum, moduleName));
+        }
+        tvwRsyncLine.setText(sb.toString());
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         btnStartStop.setText("STOP");
         running = true;

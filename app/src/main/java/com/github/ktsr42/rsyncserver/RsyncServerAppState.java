@@ -13,6 +13,5 @@ public class RsyncServerAppState {
   }
 
   MutableLiveData<Integer> portNum = new MutableLiveData<>();
-  MutableLiveData<String> moduleName = new MutableLiveData<>();
   MutableLiveData<String> localAddress = new MutableLiveData<>();
 }

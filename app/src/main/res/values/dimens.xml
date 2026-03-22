@@ -2,4 +2,5 @@
 <resources>
     <dimen name="std_padding">8dp</dimen>
     <dimen name="ui_text_size">24sp</dimen>
+    <dimen name="whatsnew_text_size">18sp</dimen>
 </resources>

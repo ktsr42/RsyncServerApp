@@ -22,7 +22,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
-import com.github.ktsr42.yajsynclib.LibServer;
+import com.github.ktsr42.yajsynclib.LibServerMulti;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -63,7 +63,9 @@ final class RsyncServer extends Handler {
 
     }
 
-    private LibServer srv;
+    private String[] moduleNames;
+    private String[] modulePaths;
+    private LibServerMulti srv;
     private InetAddress localaddr;
     private boolean run = false;
     private RsyncServerAppState appstate = RsyncServerAppState.getInstance();
@@ -73,7 +75,6 @@ final class RsyncServer extends Handler {
     private static RsyncServer singleton_instance;
 
     private int port;
-    private String moduleName;
     private String password = null;
 
     private void connectedToWifi() {
@@ -100,22 +101,14 @@ final class RsyncServer extends Handler {
         }
 
         Log.d("RsyncServer", "Starting service");
-        Object[] mnp = null;
-        // FIXME: Environment.getExternalStorageDirectory() is deprecated in Android 11.
-        // its replacement is Context.getExternalFilesDir (https://developer.android.com/reference/android/content/Context#getExternalFilesDir(java.lang.String))
-        // This function accepts a null argument, but it points to a path that is not identical with
-        // the return value of Environment.getExternalStorageDirectory().
-        // We have to do more research, potentially switching to multiple rsync modules; one per
-        // string argument accepted by getExternalFilesDir.
-        String sharedStorage = Environment.getExternalStorageDirectory().toString();
 
         try {
-            srv = new LibServer(moduleName, sharedStorage, port, password);
-            mnp = srv.initServer(localaddr);
+            srv = new LibServerMulti(port, moduleNames, modulePaths, password);
+            port = srv.initServer(localaddr);
         } catch (BindException bex) {
             try {
-                srv = new LibServer(moduleName, sharedStorage, 0, password);
-                mnp = srv.initServer(localaddr);
+                srv = new LibServerMulti(0, moduleNames, modulePaths, password);
+                port = srv.initServer(localaddr);
             } catch( IOException e) {
                 e.printStackTrace();
                 errorOpeningPort();
@@ -130,9 +123,6 @@ final class RsyncServer extends Handler {
         srv.run();
 
         appstate.localAddress.postValue(localaddr.toString());
-        moduleName = (String)mnp[0];
-        appstate.moduleName.postValue(moduleName);
-        port = (Integer)mnp[1];
         appstate.portNum.postValue(port);
 
         displayNotification();
@@ -143,7 +133,6 @@ final class RsyncServer extends Handler {
         if(srv == null) return;
 
         appstate.localAddress.postValue(null);
-        appstate.moduleName.postValue(null);
         appstate.portNum.postValue(null);
 
         Log.d("RsyncServer", "Stopping service");
@@ -152,7 +141,7 @@ final class RsyncServer extends Handler {
         cancelNotification();
     }
 
-    private RsyncServer(Looper looper, Context appctx, ConnectivityManager cm, int p, String module) {
+    private RsyncServer(Looper looper, Context appctx, ConnectivityManager cm, int p, String[] mns, String[] mps) {
         super(looper);
 
         appContext = appctx;
@@ -163,14 +152,15 @@ final class RsyncServer extends Handler {
         cm.registerNetworkCallback(nwrb.build(), new WifiNetworkCallback());
 
         port = p;
-        moduleName = module;
-    }
+        moduleNames = mns;
+        modulePaths = mps;
+        }
 
-    public static synchronized RsyncServer getRsyncServer(Context appctx, ConnectivityManager cm, int p, String module) {
+    public static synchronized RsyncServer getRsyncServer(Context appctx, ConnectivityManager cm, int p, String[] mns, String[] mps) {
         if(singleton_instance == null) {
             HandlerThread ht = new HandlerThread("Rsync Server Thread", Process.THREAD_PRIORITY_BACKGROUND);
             ht.start();
-            singleton_instance = new RsyncServer(ht.getLooper(), appctx, cm, p, module);
+            singleton_instance = new RsyncServer(ht.getLooper(), appctx, cm, p, mns, mps);
         }
 
         return singleton_instance;
