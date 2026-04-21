@@ -104,11 +104,11 @@ final class RsyncServer extends Handler {
 
         try {
             srv = new LibServerMulti(port, moduleNames, modulePaths, password);
-            port = srv.initServer(localaddr);
+            port = srv.initServer();
         } catch (BindException bex) {
             try {
                 srv = new LibServerMulti(0, moduleNames, modulePaths, password);
-                port = srv.initServer(localaddr);
+                port = srv.initServer();
             } catch( IOException e) {
                 e.printStackTrace();
                 errorOpeningPort();
